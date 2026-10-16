@@ -1,5 +1,5 @@
 const CACHE = "framing-v1";
-const FILES = ["./", "index.html", "manifest.json", "icons/icon-192.png", "icons/icon-512.png"];
+const FILES = ["./", "index.html", "manifest.json", "icons/192_camera.png", "icons/512_camera.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
