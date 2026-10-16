@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#000000">
-<link rel="apple-touch-icon" href="icons/192_camera.png">
-
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Framing Helper: check your camera before a call</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="icons/192_camera.png">
+<link rel="apple-touch-icon" href="icons/192_camera.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
@@ -162,7 +163,8 @@
       guidance.className = "guidance " + (message === "You are centred." ? "ok" : "fix");
       announced = message;
       if (speak.checked) {
-        speechSynthesis.cancel();
+        // Only cancel if already talking: cancel() right before speak() can drop the message on phones.
+        if (speechSynthesis.speaking) speechSynthesis.cancel();
         speechSynthesis.speak(new SpeechSynthesisUtterance(text));
       }
     }
@@ -221,6 +223,13 @@
 
   startButton.addEventListener("click", async () => {
     if (running) { stop(); return; }
+
+    // Unlock speech on mobile: it must be triggered directly by the tap,
+    // before any await, or phones will block later spoken messages.
+    if (speak.checked && "speechSynthesis" in window) {
+      speechSynthesis.speak(new SpeechSynthesisUtterance("Starting camera"));
+    }
+
     try {
       status.textContent = "Loading face detector...";
       await loadDetector();
@@ -240,9 +249,8 @@
   });
 
   if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
-}
-
+    navigator.serviceWorker.register("sw.js");
+  }
 </script>
 </body>
 </html>
